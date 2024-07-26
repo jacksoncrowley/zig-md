@@ -27,7 +27,7 @@ At the end of each "part", I dipped into the GROMACS & molly.jl source code to u
 ## To-Do
 - [x] Particles as objects with parameters
 - [x] System creator, populate the box with however many particles
-- [ ] Lennard-Jones interactions
+- [x] Lennard-Jones interactions
 - [ ] Velocity-verlet integrator algorithm
 - [ ] Periodic boundary conditions
 - [ ] File i/o (.xyz format?)

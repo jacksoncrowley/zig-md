@@ -84,7 +84,7 @@ pub const System = struct {
     pub fn calculate_forces(self: *System, timestep: f16) !void {
         std.debug.print("{}", .{timestep});
         for (self.particles[0 .. self.particles.len - 1], 0..) |*particle_i, i| {
-            for (self.particles[i + 1 ..], i + 1..) |*particle_j, j| {
+            for (self.particles[i + 1 ..]) |*particle_j| {
                 var r = Vec3.subtract(particle_i.position, particle_j.position);
                 r = applyPBC(r, self.box_dims);
                 // I suppose after this step we'd cut-off?
@@ -93,8 +93,9 @@ pub const System = struct {
                 const r6i = std.math.pow(f32, r2i, 3);
                 const r12i = std.math.pow(f32, r2i, 6);
 
-                const lj = 4 * (r12i - r6i); // no epsilon or sigma for now
+                const lj = 4 * (r12i - r6i); // no epsilon or sigma for now, I'm lazy
                 const force = Vec3.scale(r, lj);
+                std.debug.print("\n{}", .{force});
                 particle_i.force = Vec3.subtract(particle_i.force, force);
                 particle_j.force = Vec3.add(particle_j.force, force);
             }
