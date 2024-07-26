@@ -1,19 +1,17 @@
 const std = @import("std");
 const Particle = @import("modules.zig").Particle;
-const Simulator = @import("modules.zig").Simulator
+const System = @import("modules.zig").System;
 
-// pub fn main() !void {
-//     var p = Particle{
-//         .position = .{ 0, 0, 0 },
-//         .velocity = .{ 1, 1, 1 },
-//         .force = .{ 0, 0, 0 },
-//         .mass = 1.0,
-//     };
+pub fn main() !void {
+    var allocator = std.heap.page_allocator;
+    const box_dims: [3]f32 = .{ 1, 1, 1 };
+    var system = System{
+        .box_dims = box_dims,
+        .particles = &[_]Particle{},
+    };
+    try system.genRandomSystem(&allocator, 10, 1, -1);
 
-//     const ke = p.kineticEnergy();
-//     std.debug.print("Kinetic energy: {any}\n", .{ke});
-// }
-
-pub fun main() void {
-    var simulation = Simulator{100, }
+    for (system.particles) |particle| {
+        std.debug.print("{} ", .{particle.velocity[0]});
+    }
 }

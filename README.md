@@ -21,8 +21,8 @@ At the end of each "part", I dipped into the GROMACS & molly.jl source code to u
 
 ## To-Do
 ### Part 1
-- [ ] Particles as objects with parameters
-- [ ] System creator, populate the box with however many particles
+- [x] Particles as objects with parameters
+- [x] System creator, populate the box with however many particles
 - [ ] Velocity-verlet integrator algorithm
 - [ ] File i/o (.xyz format?)
 

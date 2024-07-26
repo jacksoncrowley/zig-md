@@ -13,10 +13,22 @@ pub const Particle = struct {
     }
 };
 
-pub const Simulator = struct {
+pub const System = struct {
     particles: []Particle,
     box_dims: [3]f32,
-    ts: f32,
 
-    pub fn init_random()
+    pub fn genRandomSystem(self: *System, allocator: *std.mem.Allocator, particle_count: usize, maxVel: f16, minVel: f16) !void {
+        self.particles = try allocator.alloc(Particle, particle_count);
+
+        const seed = std.math.lossyCast(u64, std.time.nanoTimestamp());
+        var rng = std.Random.DefaultPrng.init(seed);
+
+        for (self.particles) |*particle| {
+            for (0..3) |i| {
+                particle.position[i] = (rng.random().float(f32) * self.box_dims[i]);
+                particle.velocity[i] = (rng.random().float(f32) * (maxVel - minVel) + minVel);
+            }
+            particle.mass = 1.0;
+        }
+    }
 };
