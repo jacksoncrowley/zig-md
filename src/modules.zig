@@ -81,8 +81,7 @@ pub const System = struct {
         );
     }
 
-    pub fn calculate_forces(self: *System, timestep: f16) !void {
-        std.debug.print("{}", .{timestep});
+    pub fn calculate_forces(self: *System) !void {
         for (self.particles[0 .. self.particles.len - 1], 0..) |*particle_i, i| {
             for (self.particles[i + 1 ..]) |*particle_j| {
                 var r = Vec3.subtract(particle_i.position, particle_j.position);
@@ -99,6 +98,17 @@ pub const System = struct {
                 particle_i.force = Vec3.subtract(particle_i.force, force);
                 particle_j.force = Vec3.add(particle_j.force, force);
             }
+        }
+    }
+
+    pub fn velocityVerletPositions(self: *System, ts: f16) !void {
+        for (self.particles) |*particle| {
+            // update the position due to change in velocity over timestep
+            particle.position = Vec3.add(particle.position, Vec3.scale(particle.velocity, ts));
+            // then update position as a result of the acceleration due to force (a) over the timestep (at)
+            const a = Vec3.scale(particle.force, (1 / particle.mass));
+            const at = Vec3.scale(a, std.math.pow(f32, ts, 2));
+            particle.position = Vec3.add(particle.position, Vec3.scale(at, 0.5));
         }
     }
 };

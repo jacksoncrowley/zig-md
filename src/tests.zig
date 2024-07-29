@@ -17,7 +17,9 @@ pub fn main() !void {
 
     try system.reset_forces();
 
-    try system.calculate_forces(1);
+    try system.calculate_forces();
+
+    try system.velocityVerletPositions(1);
     // for (system.particles) |particle| {
     //     std.debug.print("{} ", .{particle.velocity[0]});
     // }
