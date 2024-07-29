@@ -19,7 +19,7 @@ pub fn main() !void {
 
     try system.calculate_forces();
 
-    try system.velocityVerletPositions(1);
+    try system.leapFrog(0.0000001);
     // for (system.particles) |particle| {
     //     std.debug.print("{} ", .{particle.velocity[0]});
     // }

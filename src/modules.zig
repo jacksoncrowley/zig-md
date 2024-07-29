@@ -32,6 +32,22 @@ pub const Vec3 = struct {
     pub fn scale(a: Vec3, factor: f32) Vec3 {
         return Vec3{ .x = a.x * factor, .y = a.y * factor, .z = a.z * factor };
     }
+
+    fn wrapCoord(coord: f32, box_dim: f32) f32 {
+        if (coord < 0) {
+            return coord + box_dim * @ceil(@abs(coord) / box_dim);
+        } else {
+            return coord;
+        }
+    }
+
+    pub fn wrapPBC(a: Vec3, box_dims: Vec3) Vec3 {
+        return Vec3{
+            .x = wrapCoord(a.x, box_dims.x),
+            .y = wrapCoord(a.y, box_dims.y),
+            .z = wrapCoord(a.z, box_dims.z),
+        };
+    }
 };
 
 pub const Particle = struct {
@@ -73,7 +89,8 @@ pub const System = struct {
         }
     }
 
-    pub fn applyPBC(r: Vec3, box_dims: Vec3) Vec3 {
+    pub fn interactionPBC(r: Vec3, box_dims: Vec3) Vec3 {
+        // the minimum image convention
         return Vec3.init(
             r.x - box_dims.x * @round(r.x / box_dims.x),
             r.y - box_dims.y * @round(r.y / box_dims.y),
@@ -85,7 +102,7 @@ pub const System = struct {
         for (self.particles[0 .. self.particles.len - 1], 0..) |*particle_i, i| {
             for (self.particles[i + 1 ..]) |*particle_j| {
                 var r = Vec3.subtract(particle_i.position, particle_j.position);
-                r = applyPBC(r, self.box_dims);
+                r = interactionPBC(r, self.box_dims);
                 // I suppose after this step we'd cut-off?
                 const r2 = Vec3.dot(r, r);
                 const r2i = 1 / r2;
@@ -94,21 +111,25 @@ pub const System = struct {
 
                 const lj = 4 * (r12i - r6i); // no epsilon or sigma for now, I'm lazy
                 const force = Vec3.scale(r, lj);
-                std.debug.print("\n{}", .{force});
                 particle_i.force = Vec3.subtract(particle_i.force, force);
                 particle_j.force = Vec3.add(particle_j.force, force);
             }
         }
     }
 
-    pub fn velocityVerletPositions(self: *System, ts: f16) !void {
+    pub fn leapFrog(self: *System, ts: f16) !void {
         for (self.particles) |*particle| {
-            // update the position due to change in velocity over timestep
+            // update the velocities to t - 1/2 dt
+            // std.debug.print("{}\n", .{particle.velocity});
+            particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / particle.mass)));
+            // std.debug.print("{}\n", .{particle.velocity});
+            // then update positions
+            std.debug.print("Old: {}\n", .{particle.position.x});
             particle.position = Vec3.add(particle.position, Vec3.scale(particle.velocity, ts));
-            // then update position as a result of the acceleration due to force (a) over the timestep (at)
-            const a = Vec3.scale(particle.force, (1 / particle.mass));
-            const at = Vec3.scale(a, std.math.pow(f32, ts, 2));
-            particle.position = Vec3.add(particle.position, Vec3.scale(at, 0.5));
+            std.debug.print("New: {}\n", .{particle.position.x});
+            // // apply PBC
+            particle.position = Vec3.wrapPBC(particle.position, self.box_dims);
+            std.debug.print("PBC: {}\n\n", .{particle.position.x});
         }
     }
 };
