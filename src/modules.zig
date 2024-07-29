@@ -36,6 +36,8 @@ pub const Vec3 = struct {
     fn wrapCoord(coord: f32, box_dim: f32) f32 {
         if (coord < 0) {
             return coord + box_dim * @ceil(@abs(coord) / box_dim);
+        } else if (coord >= box_dim) {
+            return coord - box_dim * @ceil(coord / box_dim);
         } else {
             return coord;
         }
