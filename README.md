@@ -28,8 +28,8 @@ At the end of each "part", I dipped into the GROMACS & molly.jl source code to u
 - [x] Particles as objects with parameters
 - [x] System creator, populate the box with however many particles
 - [x] Lennard-Jones interactions
-- [ ] Velocity-verlet integrator algorithm
-- [ ] Periodic boundary conditions
+- [x] Velocity-verlet integrator algorithm
+- [x] Periodic boundary conditions
 - [ ] File i/o (.xyz format?)
 - [ ] Electrostatic interactions
 - [ ] Thermostat (simple? modern?)
