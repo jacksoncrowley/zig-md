@@ -123,6 +123,7 @@ pub const System = struct {
                 particle_j.force = Vec3.add(particle_j.force, force);
             }
         }
+        std.debug.print("{}\n", .{energy}); // add a warning if energy = nan
         try self.energies.append(energy);
     }
 
@@ -133,12 +134,18 @@ pub const System = struct {
             particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / particle.mass)));
             // std.debug.print("{}\n", .{particle.velocity});
             // then update positions
-            std.debug.print("Old: {}\n", .{particle.position.x});
+            // std.debug.print("Old: {}\n", .{particle.position.x});
             particle.position = Vec3.add(particle.position, Vec3.scale(particle.velocity, ts));
-            std.debug.print("New: {}\n", .{particle.position.x});
+            // std.debug.print("New: {}\n", .{particle.position.x});
             // // apply PBC
             particle.position = Vec3.wrapPBC(particle.position, self.box_dims);
-            std.debug.print("PBC: {}\n\n", .{particle.position.x});
+            // std.debug.print("PBC: {}\n\n", .{particle.position.x});
         }
+    }
+
+    pub fn step(self: *System, ts: f16) !void {
+        try self.reset_forces();
+        try self.calculate_forces();
+        try self.leapFrog(ts);
     }
 };
