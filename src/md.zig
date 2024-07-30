@@ -15,7 +15,7 @@ pub fn main() !void {
     };
     try system.genRandomSystem(&allocator, 5, 1, -1);
 
-    const n_steps: u32 = 1000;
+    const n_steps: u32 = 100000;
     var current_step: u32 = 0;
     while (current_step <= n_steps) {
         try system.step(0.01);

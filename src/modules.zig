@@ -51,6 +51,10 @@ pub const Vec3 = struct {
             .z = wrapCoord(a.z, box_dims.z),
         };
     }
+
+    pub fn sum(self: Vec3) f32 {
+        return self.x + self.y + self.z;
+    }
 };
 
 pub const Particle = struct {
@@ -103,6 +107,7 @@ pub const System = struct {
     }
 
     pub fn calculate_forces(self: *System) !void {
+        const energyNan = error{nan};
         var energy: f32 = 0.0;
         for (self.particles[0 .. self.particles.len - 1], 0..) |*particle_i, i| {
             for (self.particles[i + 1 ..]) |*particle_j| {
@@ -123,15 +128,20 @@ pub const System = struct {
                 particle_j.force = Vec3.add(particle_j.force, force);
             }
         }
-        std.debug.print("{}\n", .{energy}); // add a warning if energy = nan
+        // std.debug.print("{}\n", .{energy}); // add a warning if energy = nan
+        if (std.math.isNan(energy)) return energyNan.nan;
         try self.energies.append(energy);
     }
 
     pub fn leapFrog(self: *System, ts: f16) !void {
+        var sumv: f32 = 0.0;
+        var sumv2: f32 = 0.0;
         for (self.particles) |*particle| {
             // update the velocities to t - 1/2 dt
             // std.debug.print("{}\n", .{particle.velocity});
             particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / particle.mass)));
+            sumv += Vec3.sum(particle.velocity);
+            sumv2 += std.math.pow(f32, Vec3.sum(particle.velocity), 2);
             // std.debug.print("{}\n", .{particle.velocity});
             // then update positions
             // std.debug.print("Old: {}\n", .{particle.position.x});
@@ -141,6 +151,7 @@ pub const System = struct {
             particle.position = Vec3.wrapPBC(particle.position, self.box_dims);
             // std.debug.print("PBC: {}\n\n", .{particle.position.x});
         }
+        std.debug.print("{}\n", .{sumv2});
     }
 
     pub fn step(self: *System, ts: f16) !void {
