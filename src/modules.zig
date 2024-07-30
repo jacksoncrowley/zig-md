@@ -107,7 +107,7 @@ pub const System = struct {
     }
 
     pub fn calculate_forces(self: *System) !void {
-        const energyNan = error{nan};
+        // const energyNan = error{nan};
         var energy: f32 = 0.0;
         for (self.particles[0 .. self.particles.len - 1], 0..) |*particle_i, i| {
             for (self.particles[i + 1 ..]) |*particle_j| {
@@ -129,7 +129,7 @@ pub const System = struct {
             }
         }
         // std.debug.print("{}\n", .{energy}); // add a warning if energy = nan
-        if (std.math.isNan(energy)) return energyNan.nan;
+        if (std.math.isNan(energy)) return error.energyNan;
         try self.energies.append(energy);
     }
 
@@ -137,21 +137,19 @@ pub const System = struct {
         var sumv: f32 = 0.0;
         var sumv2: f32 = 0.0;
         for (self.particles) |*particle| {
-            // update the velocities to t - 1/2 dt
-            // std.debug.print("{}\n", .{particle.velocity});
-            particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / particle.mass)));
-            sumv += Vec3.sum(particle.velocity);
-            sumv2 += std.math.pow(f32, Vec3.sum(particle.velocity), 2);
-            // std.debug.print("{}\n", .{particle.velocity});
+            // update the velocities to t + 1/2 dt
+            particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / 2 * particle.mass)));
+
             // then update positions
-            // std.debug.print("Old: {}\n", .{particle.position.x});
             particle.position = Vec3.add(particle.position, Vec3.scale(particle.velocity, ts));
-            // std.debug.print("New: {}\n", .{particle.position.x});
             // // apply PBC
             particle.position = Vec3.wrapPBC(particle.position, self.box_dims);
-            // std.debug.print("PBC: {}\n\n", .{particle.position.x});
+            // update the velocities to t + dt
+            particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / 2 * particle.mass)));
+            sumv += Vec3.sum(particle.velocity);
+            sumv2 += std.math.pow(f32, Vec3.sum(particle.velocity), 2);
         }
-        std.debug.print("{}\n", .{sumv2});
+        std.debug.print("{}\n", .{sumv});
     }
 
     pub fn step(self: *System, ts: f16) !void {

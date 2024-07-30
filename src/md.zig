@@ -15,10 +15,10 @@ pub fn main() !void {
     };
     try system.genRandomSystem(&allocator, 5, 1, -1);
 
-    const n_steps: u32 = 100000;
+    const n_steps: u32 = 10000000;
     var current_step: u32 = 0;
     while (current_step <= n_steps) {
-        try system.step(0.01);
+        try system.step(0.0001);
         current_step += 1;
     }
     // for (system.particles) |particle| {
