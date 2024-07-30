@@ -1,4 +1,5 @@
 const std = @import("std");
+const ArrayList = std.ArrayList;
 
 pub const Vec3 = struct {
     x: f32,
@@ -62,6 +63,7 @@ pub const Particle = struct {
 pub const System = struct {
     particles: []Particle,
     box_dims: Vec3,
+    energies: ArrayList(f32),
 
     pub fn genRandomSystem(self: *System, allocator: *std.mem.Allocator, particle_count: usize, maxVel: f16, minVel: f16) !void {
         self.particles = try allocator.alloc(Particle, particle_count);
@@ -101,6 +103,7 @@ pub const System = struct {
     }
 
     pub fn calculate_forces(self: *System) !void {
+        var energy: f32 = 0.0;
         for (self.particles[0 .. self.particles.len - 1], 0..) |*particle_i, i| {
             for (self.particles[i + 1 ..]) |*particle_j| {
                 var r = Vec3.subtract(particle_i.position, particle_j.position);
@@ -111,12 +114,16 @@ pub const System = struct {
                 const r6i = std.math.pow(f32, r2i, 3);
                 const r12i = std.math.pow(f32, r2i, 6);
 
-                const lj = 4 * (r12i - r6i); // no epsilon or sigma for now, I'm lazy
-                const force = Vec3.scale(r, lj);
+                const lj_energy = 4 * (r12i - r6i); // no epsilon or sigma for now, I'm lazy
+                energy += lj_energy;
+
+                const lj_force = 48 * r2i * r6i * (r6i - 0.5);
+                const force = Vec3.scale(r, lj_force);
                 particle_i.force = Vec3.subtract(particle_i.force, force);
                 particle_j.force = Vec3.add(particle_j.force, force);
             }
         }
+        try self.energies.append(energy);
     }
 
     pub fn leapFrog(self: *System, ts: f16) !void {

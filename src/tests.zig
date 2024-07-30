@@ -2,6 +2,7 @@ const std = @import("std");
 const Vec3 = @import("modules.zig").Vec3;
 const Particle = @import("modules.zig").Particle;
 const System = @import("modules.zig").System;
+const ArrayList = std.ArrayList;
 
 pub fn main() !void {
     // allocator
@@ -12,6 +13,7 @@ pub fn main() !void {
     var system = System{
         .box_dims = Vec3.init(3, 3, 3),
         .particles = &[_]Particle{},
+        .energies = ArrayList(f32).init(allocator),
     };
     try system.genRandomSystem(&allocator, 25, 1, -1);
 
@@ -24,4 +26,5 @@ pub fn main() !void {
     //     std.debug.print("{} ", .{particle.velocity[0]});
     // }
     allocator.free(system.particles);
+    system.energies.deinit();
 }
