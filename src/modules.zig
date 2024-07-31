@@ -91,6 +91,10 @@ pub const System = struct {
         }
     }
 
+    pub fn nParticles(self: *System) usize {
+        return self.particles.len;
+    }
+
     pub fn reset_forces(self: *System) !void {
         for (self.particles) |*particle| {
             particle.force = Vec3.init(0, 0, 0);
@@ -149,7 +153,11 @@ pub const System = struct {
             sumv += Vec3.sum(particle.velocity);
             sumv2 += std.math.pow(f32, Vec3.sum(particle.velocity), 2);
         }
-        std.debug.print("{}\n", .{sumv});
+        // std.debug.print("{}\n", .{sumv});
+        const step_energy = self.energies.getLast();
+        const nparticles: f32 = @floatFromInt(self.nParticles());
+        const etot = (step_energy + (0.5 * sumv2)) / nparticles;
+        std.debug.print("{}\n", .{etot});
     }
 
     pub fn step(self: *System, ts: f16) !void {
