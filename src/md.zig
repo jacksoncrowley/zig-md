@@ -13,12 +13,12 @@ pub fn main() !void {
         .particles = &[_]Particle{},
         .energies = ArrayList(f32).init(allocator),
     };
-    try system.genRandomSystem(&allocator, 5, 1, -1);
+    try system.genRandomSystem(&allocator, 50, 1, -1);
 
-    const n_steps: u32 = 10000000;
+    const n_steps: u32 = 100000000;
     var current_step: u32 = 0;
     while (current_step <= n_steps) {
-        try system.step(0.0001);
+        try system.leapFrog(0.0001);
         current_step += 1;
     }
     // for (system.particles) |particle| {

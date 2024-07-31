@@ -138,31 +138,33 @@ pub const System = struct {
     }
 
     pub fn leapFrog(self: *System, ts: f16) !void {
-        var sumv: f32 = 0.0;
-        var sumv2: f32 = 0.0;
+        var ke: f32 = 0.0;
         for (self.particles) |*particle| {
             // update the velocities to t + 1/2 dt
-            particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / 2 * particle.mass)));
+            particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / (2 * particle.mass))));
+        }
 
+        for (self.particles) |*particle| {
             // then update positions
             particle.position = Vec3.add(particle.position, Vec3.scale(particle.velocity, ts));
             // // apply PBC
             particle.position = Vec3.wrapPBC(particle.position, self.box_dims);
-            // update the velocities to t + dt
-            particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / 2 * particle.mass)));
-            sumv += Vec3.sum(particle.velocity);
-            sumv2 += std.math.pow(f32, Vec3.sum(particle.velocity), 2);
         }
-        // std.debug.print("{}\n", .{sumv});
-        const step_energy = self.energies.getLast();
-        const nparticles: f32 = @floatFromInt(self.nParticles());
-        const etot = (step_energy + (0.5 * sumv2)) / nparticles;
-        std.debug.print("{}\n", .{etot});
-    }
 
-    pub fn step(self: *System, ts: f16) !void {
         try self.reset_forces();
         try self.calculate_forces();
-        try self.leapFrog(ts);
+
+        for (self.particles) |*particle| {
+            // update the velocities to t + dt
+            particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / (2 * particle.mass))));
+            ke += Vec3.dot(particle.velocity, particle.velocity);
+        }
+        // Calculate total energy
+        const nparticles = @as(f32, @floatFromInt(self.nParticles()));
+        const pe = self.energies.getLast();
+        const etot = (pe + (ke / 2)) / nparticles;
+        const temp = ke / (3 * nparticles);
+        std.debug.print("Total Energy per Particle: {}\n", .{etot});
+        std.debug.print("Instantaneous Temperature: {}\n", .{temp});
     }
 };
