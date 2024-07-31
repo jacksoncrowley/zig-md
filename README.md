@@ -28,10 +28,10 @@ At the end of each "part", I dipped into the GROMACS & molly.jl source code to u
 - [x] Particles as objects with parameters
 - [x] System creator, populate the box with however many particles
 - [x] Lennard-Jones interactions
+- [ ] Sigma and epsilon
 - [x] Velocity-verlet integrator algorithm
 - [x] Periodic boundary conditions
 - [ ] File i/o (.xyz format?)
-- [ ] Electrostatic interactions
 - [ ] Thermostat (simple? modern?)
 - [ ] Barostat (")
 
@@ -39,3 +39,4 @@ At the end of each "part", I dipped into the GROMACS & molly.jl source code to u
 - [ ] bonded interactions
 - [ ] generate random velocities with a Maxwell-Boltzmann distribution
 - [ ] gro and xtc reader/writer
+- [ ] Electrostatic interactions

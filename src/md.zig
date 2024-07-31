@@ -9,11 +9,11 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     var allocator = gpa.allocator();
     var system = System{
-        .box_dims = Vec3.init(10, 10, 10),
+        .box_dims = Vec3.init(100, 100, 100),
         .particles = &[_]Particle{},
         .energies = ArrayList(f32).init(allocator),
     };
-    try system.genRandomSystem(&allocator, 50, 1, -1);
+    try system.genRandomSystem(&allocator, 100, 1, -1);
 
     const n_steps: u32 = 100000000;
     var current_step: u32 = 0;
