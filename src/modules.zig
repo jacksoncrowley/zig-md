@@ -93,19 +93,18 @@ pub const System = struct {
 
     pub fn genTwoBodySystem(self: *System, allocator: *std.mem.Allocator) !void {
         self.particles = try allocator.alloc(Particle, 2);
-        self.box_dims = Vec3.init(4, 4, 4);
-
+        self.box_dims = Vec3.init(10, 10, 10);
         // Particle 1: at rest at origin
         self.particles[0] = Particle{
-            .position = Vec3.init(2, 0, 0),
-            .velocity = Vec3.init(0, 0, 0),
+            .position = Vec3.init(5, 0, 0),
+            .velocity = Vec3.init(1, 0, 0),
             .force = Vec3.init(0, 0, 0),
             .mass = 1.0,
         };
 
         // Particle 2: at x=1, with initial velocity in -x direction
         self.particles[1] = Particle{
-            .position = Vec3.init(3, 0, 0),
+            .position = Vec3.init(6, 0, 0),
             .velocity = Vec3.init(-1, 0, 0),
             .force = Vec3.init(0, 0, 0),
             .mass = 1.0,
@@ -175,7 +174,6 @@ pub const System = struct {
         energy = 0.5 * k * std.math.pow(f32, r2 - 1.0, 2);
 
         try self.energies.append(energy);
-        std.debug.print("{d}\n", .{Vec3.sum(r)});
     }
 
     pub fn velocityVerlet(self: *System, ts: f16) !void {
@@ -212,5 +210,33 @@ pub const System = struct {
         // const temp = ke / (3 * nparticles);
         // std.debug.print("Total Energy per Particle: {}\n", .{etot});
         // std.debug.print("Instantaneous Temperature: {}\n", .{temp});
+    }
+
+    pub fn systemToXYZ(self: *System, filename: []const u8) !void {
+        const file = try std.fs.cwd().createFile(filename, .{});
+        defer file.close();
+
+        var writer = file.writer();
+
+        try writer.print("{}\n\n", .{self.nParticles()});
+
+        for (self.particles) |particle| {
+            try writer.print("H\t{:.3} {:.3} {:.3}\n", .{ particle.position.x, particle.position.y, particle.position.z });
+        }
+    }
+
+    pub fn writeTrajectoryXYZ(self: *System, filename: []const u8) !void {
+        const file = try std.fs.cwd().createFile(filename, .{ .truncate = false });
+        defer file.close();
+        try file.seekFromEnd(0);
+
+        var writer = file.writer();
+
+        try writer.print("{}\n", .{self.nParticles()});
+        try writer.print("Frame of trajectory\n", .{});
+
+        for (self.particles) |particle| {
+            try writer.print("H\t{:.3} {:.3} {:.3}\n", .{ particle.position.x, particle.position.y, particle.position.z });
+        }
     }
 };

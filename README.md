@@ -12,6 +12,7 @@ And I was also bored of only using python all of the time, and haven't had any r
 *Will be continually updated*
 #### MD:
 - [Understanding Molecular Simulation](https://www.sciencedirect.com/book/9780122673511/understanding-molecular-simulation), Second Edition, by Daan Frenkel (I will buy the third edition soon enough, I don't enjoy reading the examples in fortran)
+- [Computer Simulations of Liquids](https://academic.oup.com/book/27866), Second Edition, by Michael P. Allen and Dominic J. Tildesley
 - The [GROMACS Reference Manual](https://manual.gromacs.org/2024.2/reference-manual/introduction.html)
 
 #### Zig:
@@ -25,21 +26,22 @@ I used Claude 3.5 Sonnet from Anthropic - not to write code (it was important I 
 At the end of each "part", I dipped into the GROMACS & molly.jl source code to understand how production-ready MD engines handle the concepts I had just tackled.
 
 ## To-Do
-#### Part 1
+#### Part 1: The Engine
 - [x] Particles as objects with parameters
 - [x] System creator, populate the box with however many particles
 - [x] Test Integrators with harmonic 2 body system
 - [x] Velocity-verlet integrator algorithm
 - [x] Periodic boundary conditions
 - [ ] File i/o (.xyz format?)
-#### Part 2
+
+#### Part 2: The NVE Ensemble
 - [ ] Lennard-Jones interactions (currently broken)
 - [ ] Sigma and epsilon
 
-#### Part 3
+#### Part 3: The NVT Ensemble
 - [ ] Thermostat (simple? modern?)
 
-#### Part 4
+#### Part 4: The NVP Ensemble
 - [ ] Barostat (")
 
 #### Maybe one day: 

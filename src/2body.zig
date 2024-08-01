@@ -9,22 +9,21 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     var allocator = gpa.allocator();
     var system = System{
-        .box_dims = Vec3.init(100, 100, 100),
+        .box_dims = Vec3.init(10, 10, 10),
         .particles = &[_]Particle{},
         .energies = ArrayList(f32).init(allocator),
     };
     try system.genTwoBodySystem(&allocator);
 
+    try system.systemToXYZ("system.xyz");
+
+    defer allocator.free(system.particles);
+    defer system.energies.deinit();
+
     const n_steps: u32 = 10000;
     var current_step: u32 = 0;
-    while (current_step <= n_steps) {
-        try system.velocityVerlet(0.1);
-        current_step += 1;
-        std.debug.print("\n", .{});
+    while (current_step <= n_steps) : (current_step += 1) {
+        try system.velocityVerlet(0.01);
+        try system.writeTrajectoryXYZ("traj.xyz");
     }
-    // for (system.particles) |particle| {
-    //     std.debug.print("{} ", .{particle.velocity[0]});
-    // }
-    allocator.free(system.particles);
-    system.energies.deinit();
 }
