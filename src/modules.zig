@@ -91,6 +91,27 @@ pub const System = struct {
         }
     }
 
+    pub fn genTwoBodySystem(self: *System, allocator: *std.mem.Allocator) !void {
+        self.particles = try allocator.alloc(Particle, 2);
+        self.box_dims = Vec3.init(4, 4, 4);
+
+        // Particle 1: at rest at origin
+        self.particles[0] = Particle{
+            .position = Vec3.init(2, 0, 0),
+            .velocity = Vec3.init(0, 0, 0),
+            .force = Vec3.init(0, 0, 0),
+            .mass = 1.0,
+        };
+
+        // Particle 2: at x=1, with initial velocity in -x direction
+        self.particles[1] = Particle{
+            .position = Vec3.init(3, 0, 0),
+            .velocity = Vec3.init(-1, 0, 0),
+            .force = Vec3.init(0, 0, 0),
+            .mass = 1.0,
+        };
+    }
+
     pub fn nParticles(self: *System) usize {
         return self.particles.len;
     }
@@ -110,7 +131,7 @@ pub const System = struct {
         );
     }
 
-    pub fn calculate_forces(self: *System) !void {
+    pub fn forceLJ(self: *System) !void {
         // const energyNan = error{nan};
         var energy: f32 = 0.0;
         for (self.particles[0 .. self.particles.len - 1], 0..) |*particle_i, i| {
@@ -137,8 +158,33 @@ pub const System = struct {
         try self.energies.append(energy);
     }
 
-    pub fn leapFrog(self: *System, ts: f16) !void {
+    pub fn harmonic2Body(self: *System) !void {
+        if (self.nParticles() != 2) return error.not2Particles;
+        var energy: f32 = 0.0;
+        const k = 1.0;
+
+        var r = Vec3.subtract(self.particles[1].position, self.particles[0].position);
+        r = interactionPBC(r, self.box_dims);
+
+        const r2 = @sqrt(Vec3.dot(r, r));
+        const force_mag = k * (r2 - 1.0);
+
+        const force = Vec3.scale(r, -force_mag / r2);
+        self.particles[0].force = Vec3.scale(force, -1);
+        self.particles[1].force = force;
+        energy = 0.5 * k * std.math.pow(f32, r2 - 1.0, 2);
+
+        try self.energies.append(energy);
+        std.debug.print("{d}\n", .{Vec3.sum(r)});
+    }
+
+    pub fn velocityVerlet(self: *System, ts: f16) !void {
         var ke: f32 = 0.0;
+        if (self.energies.items.len == 0) {
+            try self.reset_forces();
+            try self.harmonic2Body();
+        }
+
         for (self.particles) |*particle| {
             // update the velocities to t + 1/2 dt
             particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / (2 * particle.mass))));
@@ -152,19 +198,19 @@ pub const System = struct {
         }
 
         try self.reset_forces();
-        try self.calculate_forces();
+        try self.harmonic2Body();
 
         for (self.particles) |*particle| {
             // update the velocities to t + dt
             particle.velocity = Vec3.add(particle.velocity, Vec3.scale(particle.force, (ts / (2 * particle.mass))));
             ke += Vec3.dot(particle.velocity, particle.velocity);
         }
-        // Calculate total energy
-        const nparticles = @as(f32, @floatFromInt(self.nParticles()));
-        const pe = self.energies.getLast();
-        const etot = (pe + (ke / 2)) / nparticles;
-        const temp = ke / (3 * nparticles);
-        std.debug.print("Total Energy per Particle: {}\n", .{etot});
-        std.debug.print("Instantaneous Temperature: {}\n", .{temp});
+        // // Calculate total energy
+        // const nparticles = @as(f32, @floatFromInt(self.nParticles()));
+        // const pe = self.energies.getLast();
+        // const etot = (pe + (ke / 2)) / nparticles;
+        // const temp = ke / (3 * nparticles);
+        // std.debug.print("Total Energy per Particle: {}\n", .{etot});
+        // std.debug.print("Instantaneous Temperature: {}\n", .{temp});
     }
 };
