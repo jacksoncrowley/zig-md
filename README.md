@@ -25,14 +25,21 @@ I used Claude 3.5 Sonnet from Anthropic - not to write code (it was important I 
 At the end of each "part", I dipped into the GROMACS & molly.jl source code to understand how production-ready MD engines handle the concepts I had just tackled.
 
 ## To-Do
+#### Part 1
 - [x] Particles as objects with parameters
 - [x] System creator, populate the box with however many particles
-- [x] Lennard-Jones interactions
-- [ ] Sigma and epsilon
+- [x] Test Integrators with harmonic 2 body system
 - [x] Velocity-verlet integrator algorithm
 - [x] Periodic boundary conditions
 - [ ] File i/o (.xyz format?)
+#### Part 2
+- [ ] Lennard-Jones interactions (currently broken)
+- [ ] Sigma and epsilon
+
+#### Part 3
 - [ ] Thermostat (simple? modern?)
+
+#### Part 4
 - [ ] Barostat (")
 
 #### Maybe one day: 
