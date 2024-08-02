@@ -21,6 +21,7 @@ pub const System = struct {
         try self.particles.append(particle);
     }
 
+// move to generators.zig
     pub fn genRandomSystem(self: *Self, n_particles: u32, box_size: Vec3, minVel: f16, maxVel: f32) !void {
         self.box_size = box_size;
         self.particles = try allocator.alloc(Particle, num_particles);
