@@ -21,7 +21,7 @@ pub const System = struct {
         try self.particles.append(particle);
     }
 
-// move to generators.zig
+    // move to generators.zig
     pub fn genRandomSystem(self: *Self, n_particles: u32, box_size: Vec3, minVel: f16, maxVel: f32) !void {
         self.box_size = box_size;
         self.particles = try allocator.alloc(Particle, num_particles);
@@ -44,10 +44,29 @@ pub const System = struct {
                     rng.random().float(f32) * (maxVel - minVel) + minVel,
                     rng.random().float(f32) * (maxVel - minVel) + minVel,
                     rng.random().float(f32) * (maxVel - minVel) + minVel,
-                );
-                .mass = 1.0
+                ),
+                .mass = 1.0,
+            };
             try self.addParticle(particle);
-            }
         }
+    }
+    pub fn genTwoBodySystem(self: *Self, allocator: *std.mem.allocator) !void {
+        self.particles = try allocator.alloc(Particle, 2);
+        self.box_dims = Vec3.init(10, 10, 10);
+        // Particle 1: at rest at origin
+        self.particles[0] = Particle{
+            .position = Vec3.init(5, 0, 0),
+            .velocity = Vec3.init(1, 0, 0),
+            .force = Vec3.init(0, 0, 0),
+            .mass = 1.0,
+        };
+
+        // Particle 2: at x=1, with initial velocity in -x direction
+        self.particles[1] = Particle{
+            .position = Vec3.init(6, 0, 0),
+            .velocity = Vec3.init(-1, 0, 0),
+            .force = Vec3.init(0, 0, 0),
+            .mass = 1.0,
+        };
     }
 };
