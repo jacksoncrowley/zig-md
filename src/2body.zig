@@ -7,18 +7,12 @@ const ArrayList = std.ArrayList;
 pub fn main() !void {
     // allocator
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    var allocator = gpa.allocator();
-    var system = System{
-        .box_dims = Vec3.init(10, 10, 10),
-        .particles = &[_]Particle{},
-        .energies = ArrayList(f32).init(allocator),
-    };
-    try system.genTwoBodySystem(&allocator);
+    const allocator = gpa.allocator();
 
-    try system.systemToXYZ("system.xyz");
+    var system = System.init(allocator, Vec3.init(10, 10, 10));
+    defer system.deinit();
 
-    defer allocator.free(system.particles);
-    defer system.energies.deinit();
+    try system.genTwoBodySystem();
 
     const n_steps: u32 = 10000;
     var current_step: u32 = 0;
