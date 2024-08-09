@@ -1,7 +1,7 @@
 const std = @import("std");
 const Vec3 = @import("modules.zig").Vec3;
-const Particle = @import("modules.zig").Particle;
-const System = @import("modules.zig").System;
+const Particle = @import("particle.zig").Particle;
+const System = @import("system.zig").System;
 const ArrayList = std.ArrayList;
 
 pub fn main() !void {
