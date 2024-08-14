@@ -90,21 +90,26 @@ pub const System = struct {
     pub fn forceLJ(self: *System) !void {
         // const energyNan = error{nan};
         var energy: f32 = 0.0;
-        for (self.particles[0 .. self.particles.len - 1], 0..) |*particle_i, i| {
-            for (self.particles[i + 1 ..]) |*particle_j| {
+        for (self.particles.items[0 .. self.particles.items.len - 1], 0..) |*particle_i, i| {
+            for (self.particles.items[i + 1 ..]) |*particle_j| {
+                // distance between two points, with the correction for pbc
                 var r = Vec3.subtract(particle_i.position, particle_j.position);
                 r = interactionPBC(r, self.box_dims);
-                // I suppose after this step we'd cut-off?
+                // r2 is the squared separation
                 const r2 = Vec3.dot(r, r);
                 const r2i = 1 / r2;
                 const r6i = std.math.pow(f32, r2i, 3);
-                const r12i = std.math.pow(f32, r2i, 6);
+                const r12i = std.math.pow(f32, r6i, 2);
+
+                const pair = r12i - r6i;
+                const vir = pair + r12i;
+                const force = Vec3.scale(r, pair * vir);
 
                 const lj_energy = 4 * (r12i - r6i); // no epsilon or sigma for now, I'm lazy
                 energy += lj_energy;
 
-                const lj_force = 48 * r2i * r6i * (r6i - 0.5);
-                const force = Vec3.scale(r, lj_force);
+                //const lj_force = 48 * r2i * r6i * (r6i - 0.5);
+                //const force = Vec3.scale(r, lj_force);
                 particle_i.force = Vec3.subtract(particle_i.force, force);
                 particle_j.force = Vec3.add(particle_j.force, force);
             }
@@ -137,7 +142,8 @@ pub const System = struct {
         var ke: f32 = 0.0;
         if (self.energies.items.len == 0) {
             try self.reset_forces();
-            try self.harmonic2Body();
+            //try self.harmonic2Body();
+            try self.forceLJ();
         }
 
         for (self.particles.items) |*particle| {
@@ -153,7 +159,7 @@ pub const System = struct {
         }
 
         try self.reset_forces();
-        try self.harmonic2Body();
+        try self.forceLJ();
 
         for (self.particles.items) |*particle| {
             // update the velocities to t + dt

@@ -15,10 +15,11 @@ pub fn main() !void {
     try system.genRandomSystem(10, -1, 1);
     std.debug.print("{}", .{system.particles.items[0]});
 
-    const n_steps: u32 = 100;
+    const n_steps: u32 = 10000;
     var current_step: u32 = 0;
     while (current_step <= n_steps) {
-        try system.velocityVerlet(0.0001);
+        try system.velocityVerlet(0.01);
+        try system.writeTrajectoryXYZ("traj.xyz");
         current_step += 1;
     }
     // for (system.particles) |particle| {
