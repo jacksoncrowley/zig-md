@@ -9,15 +9,15 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
 
-    var system = System.init(allocator, Vec3.init(200, 100, 100));
+    var system = System.init(allocator, Vec3.init(10, 10, 10));
     defer system.deinit();
 
-    try system.genRandomSystem(1000, -1, 1);
+    try system.genRandomSystem(100, -1, 1);
 
     const n_steps: u32 = 1000;
     var current_step: u32 = 0;
     while (current_step <= n_steps) : (current_step += 1) {
-        try system.velocityVerlet(0.01);
-        try system.writeTrajectoryXYZ("traj/1/traj.xyz");
+        try system.velocityVerlet(0.0001);
+        try system.writeTrajectoryXYZ("traj/2/traj.xyz");
     }
 }

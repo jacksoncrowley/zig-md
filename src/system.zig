@@ -88,7 +88,6 @@ pub const System = struct {
     }
 
     pub fn forceLJ(self: *System) !void {
-        // const energyNan = error{nan};
         var energy: f32 = 0.0;
         for (self.particles.items[0 .. self.particles.items.len - 1], 0..) |*particle_i, i| {
             for (self.particles.items[i + 1 ..]) |*particle_j| {
@@ -115,7 +114,7 @@ pub const System = struct {
             }
         }
         // std.debug.print("{}\n", .{energy}); // add a warning if energy = nan
-        //if (std.math.isNan(energy)) return error.energyNan;
+        if (std.math.isNan(energy)) return error.energyNan;
         try self.energies.append(energy);
     }
 
@@ -141,18 +140,17 @@ pub const System = struct {
     pub fn harmonicNBody(self: *System) !void {
         var energy: f32 = 0.0;
         const k = 1.0;
-
         for (self.particles.items[0 .. self.particles.items.len - 1], 0..) |*particle_i, i| {
             for (self.particles.items[i + 1 ..]) |*particle_j| {
                 var r = Vec3.subtract(particle_i.position, particle_j.position);
                 r = interactionPBC(r, self.box_dims);
-
                 const r2 = @sqrt(Vec3.dot(r, r));
+
                 const force_mag = k * (r2 - 1.0);
 
                 const force = Vec3.scale(r, -force_mag / r2);
-                particle_i.force = Vec3.scale(force, -1);
-                particle_j.force = force;
+                particle_i.force = Vec3.subtract(particle_i.force, force);
+                particle_j.force = Vec3.add(particle_j.force, force);
                 energy += 0.5 * k * std.math.pow(f32, r2 - 1.0, 2);
             }
         }

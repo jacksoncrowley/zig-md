@@ -35,7 +35,7 @@ pub const Vec3 = struct {
     }
 
     fn wrapCoord(coord: f32, box_dim: f32) f32 {
-        return coord - box_dim * std.math.round(coord / box_dim);
+        return coord - box_dim * @round(coord / box_dim);
     }
 
     pub fn wrapPBC(a: Vec3, box_dims: Vec3) Vec3 {

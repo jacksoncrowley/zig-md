@@ -24,9 +24,9 @@ And I was also bored of only using python all of the time, and haven't had any r
 #### The Engine
 - [x] Particles as objects with parameters
 - [x] System creator, populate the box with however many particles
+- [x] Velocity-verlet integrator algorithm
 - [x] Test Integrators with basic harmonic 2 body interactions
 - [x] ..and n body harmonic system
-- [x] Velocity-verlet integrator algorithm
 - [x] Periodic boundary conditions (possibly broken)
 - [x] File i/o (.xyz format)
 - [ ] Command line progress bar
