@@ -115,7 +115,7 @@ pub const System = struct {
             }
         }
         // std.debug.print("{}\n", .{energy}); // add a warning if energy = nan
-        if (std.math.isNan(energy)) return error.energyNan;
+        //if (std.math.isNan(energy)) return error.energyNan;
         try self.energies.append(energy);
     }
 
@@ -138,12 +138,48 @@ pub const System = struct {
         try self.energies.append(energy);
     }
 
+    pub fn harmonicNBody(self: *System) !void {
+        var energy: f32 = 0.0;
+        const k = 1.0;
+
+        for (self.particles.items[0 .. self.particles.items.len - 1], 0..) |*particle_i, i| {
+            for (self.particles.items[i + 1 ..]) |*particle_j| {
+                var r = Vec3.subtract(particle_i.position, particle_j.position);
+                r = interactionPBC(r, self.box_dims);
+
+                const r2 = @sqrt(Vec3.dot(r, r));
+                const force_mag = k * (r2 - 1.0);
+
+                const force = Vec3.scale(r, -force_mag / r2);
+                particle_i.force = Vec3.scale(force, -1);
+                particle_j.force = force;
+                energy += 0.5 * k * std.math.pow(f32, r2 - 1.0, 2);
+            }
+        }
+
+        try self.energies.append(energy);
+    }
+
+    //pub fn velocityVerlet(self: *System, ts: f16, interaction_type: []const u8) !void {
     pub fn velocityVerlet(self: *System, ts: f16) !void {
         var ke: f32 = 0.0;
+
+        //const strings_equal = std.mem.eql;
+        //const calculate_interactions = switch (interaction_type) {
+        //    strings_equal(u8, "harmonic2Body", interaction_type) => self.harmonic2Body(),
+        //    else => error.InvalidInteractionType,
+        //};
+        //
+        //
+        //
+        //std.debug.print("{}", .{strings_equal(u8, "harmonic2body", interaction_type)});
+
+        const calculate_interactions = self.harmonicNBody();
+
         if (self.energies.items.len == 0) {
             try self.reset_forces();
-            //try self.harmonic2Body();
-            try self.forceLJ();
+            try calculate_interactions;
+            //try self.forceLJ();
         }
 
         for (self.particles.items) |*particle| {
@@ -159,7 +195,8 @@ pub const System = struct {
         }
 
         try self.reset_forces();
-        try self.forceLJ();
+        try calculate_interactions;
+        //try self.forceLJ();
 
         for (self.particles.items) |*particle| {
             // update the velocities to t + dt
