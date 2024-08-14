@@ -12,7 +12,7 @@ pub fn main() !void {
     var system = System.init(allocator, Vec3.init(10, 10, 10));
     defer system.deinit();
 
-    try system.genRandomSystem(10, -1, 1);
+    try system.genRandomSystem(1000, -1, 1);
 
     const n_steps: u32 = 1000;
     var current_step: u32 = 0;
